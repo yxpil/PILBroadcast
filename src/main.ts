@@ -25,7 +25,7 @@ document.getElementById("btn-minimize")?.addEventListener("click", () => win.hid
 document.getElementById("btn-maximize")?.addEventListener("click", async () => {
   (await win.isMaximized()) ? win.unmaximize() : win.maximize();
 });
-document.getElementById("btn-close")?.addEventListener("click", () => win.close());
+document.getElementById("btn-close")?.addEventListener("click", () => win.hide());
 
 // ── State ──
 let folders: SharedFolder[] = [];

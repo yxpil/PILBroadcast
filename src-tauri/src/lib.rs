@@ -71,6 +71,17 @@ pub fn run() {
             set_password, get_folders, get_password, is_server_running, get_local_ip, get_logs,
         ])
         .setup(|app| {
+            // Prevent window from being destroyed — hide to tray instead
+            if let Some(window) = app.get_webview_window("main") {
+                let window_clone = window.clone();
+                window.on_window_event(move |event| {
+                    if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                        api.prevent_close();
+                        let _ = window_clone.hide();
+                    }
+                });
+            }
+
             // System tray
             let show_item = MenuItemBuilder::with_id("show", "显示窗口").build(app)?;
             let quit_item = MenuItemBuilder::with_id("quit", "退出").build(app)?;

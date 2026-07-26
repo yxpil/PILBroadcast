@@ -350,7 +350,7 @@ fn handle_request(mut request: tiny_http::Request, state: &Arc<Mutex<ServerState
         let rest = &url["/rename/".len()..];
         let parts: Vec<&str> = rest.splitn(2,'/').collect();
         if parts.len() >= 2 {
-            let folder_name = parts[0];
+            let folder_name = percent_decode(parts[0]);
             let old_path = percent_decode(parts[1]);
             let mut body = String::new(); let _ = request.as_reader().read_to_string(&mut body);
             let new_name = body.split('&').filter_map(|p| {
@@ -376,7 +376,7 @@ fn handle_request(mut request: tiny_http::Request, state: &Arc<Mutex<ServerState
         let rest = &url["/delete/".len()..];
         let parts: Vec<&str> = rest.splitn(2,'/').collect();
         if parts.len() >= 2 {
-            let folder_name = parts[0];
+            let folder_name = percent_decode(parts[0]);
             let path = percent_decode(parts[1]);
             if let Some(folder) = s.folders.iter().find(|f| f.name == folder_name && f.active) {
                 let full = PathBuf::from(&folder.path).join(&path);
@@ -389,7 +389,7 @@ fn handle_request(mut request: tiny_http::Request, state: &Arc<Mutex<ServerState
 
     // POST /upload/<folder>
     if method == tiny_http::Method::Post && url.starts_with("/upload/") {
-        let folder_name = &url["/upload/".len()..];
+        let folder_name = percent_decode(&url["/upload/".len()..]);
         if let Some(folder) = s.folders.iter().find(|f| f.name == folder_name && f.active) {
             let mut body = Vec::new();
             // Read the multipart body
@@ -407,7 +407,7 @@ fn handle_request(mut request: tiny_http::Request, state: &Arc<Mutex<ServerState
                     // Reject shortcut/dangerous file extensions
                     let lower_name = filename.to_lowercase();
                     if lower_name.ends_with(".lnk") || lower_name.ends_with(".url") {
-                        let resp = html_response(format!("<meta http-equiv=\"refresh\" content=\"0;url=/files/{}\"><script>alert('不支持上传快捷方式文件')</script>", folder_name));
+                        let resp = html_response(format!("<meta http-equiv=\"refresh\" content=\"0;url=/files/{}\"><script>alert('不支持上传快捷方式文件')</script>", &folder.name));
                         let _ = request.respond(resp);
                         return;
                     }
