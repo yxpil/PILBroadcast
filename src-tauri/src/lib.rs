@@ -67,11 +67,20 @@ pub fn run() {
     match singleton {
         Ok(_) => { /* first instance */ }
         Err(_) => {
-            // Another instance is running — tell it to show its window, then exit
-            if let Ok(mut stream) = std::net::TcpStream::connect("127.0.0.1:9725") {
-                let _ = std::io::Write::write_all(&mut stream, b"show\n");
+            // Another instance may be running — try to wake it via IPC
+            match std::net::TcpStream::connect("127.0.0.1:9725") {
+                Ok(mut stream) => {
+                    let _ = std::io::Write::write_all(&mut stream, b"show\n");
+                    std::process::exit(0);
+                }
+                Err(_) => {
+                    // IPC failed — stale lock from crashed/old version, clean up and continue
+                    let _ = std::fs::remove_file(&lock_path);
+                    if std::fs::OpenOptions::new().create_new(true).write(true).open(&lock_path).is_err() {
+                        std::process::exit(0);
+                    }
+                }
             }
-            std::process::exit(0);
         }
     };
 
