@@ -23,6 +23,8 @@ const ICON_DOWNLOAD: &str = r#"<svg width="18" height="18" viewBox="0 0 1024 102
 
 const ICON_UPLOAD: &str = r#"<svg width="18" height="18" viewBox="0 0 1024 1024" fill="none"><path fill="currentColor" d="M512 213a43 43 0 0130 13l141 141a43 43 0 01-60 60l-68-68v323a43 43 0 01-86 0V359l-68 68a43 43 0 01-60-60l141-141a43 43 0 0130-13z"/><path fill="currentColor" d="M213 725a43 43 0 00-85 0 171 171 0 00171 171h426a171 171 0 00171-171 43 43 0 00-85 0 85 85 0 01-85 85H299a85 85 0 01-85-85z"/></svg>"#;
 
+const ICON_SEARCH: &str = r#"<svg width="16" height="16" viewBox="0 0 1024 1024" fill="none"><circle cx="458" cy="458" r="245" stroke="currentColor" stroke-width="85" fill="none"/><path fill="currentColor" d="M683 626l286 286a43 43 0 11-60 60L640 703z"/></svg>"#;
+
 const ICON_RENAME: &str = r#"<svg width="16" height="16" viewBox="0 0 1024 1024" fill="none"><path fill="currentColor" d="M725 128a128 128 0 0190 38l43 43a128 128 0 010 181L482 767a85 85 0 01-48 24l-170 26a43 43 0 01-47-47l26-170a85 85 0 0124-48l377-376a128 128 0 0181-48zm0 85a43 43 0 00-30 13L318 603l-17 113 113-17 377-377a43 43 0 000-60l-43-43a43 43 0 00-23-6z"/></svg>"#;
 
 // ── HTML Generator ──
@@ -103,6 +105,11 @@ footer{text-align:center;padding:20px;font-size:12px;color:#6b9080;opacity:.7}
 .upload-area{border:2px dashed rgba(0,0,0,0.1);border-radius:12px;padding:30px;text-align:center;margin-bottom:20px;cursor:pointer;transition:border-color .15s,background .15s}
 .upload-area:hover{border-color:#40916c;background:rgba(255,255,255,0.3)}
 .upload-area p{color:#6b9080;font-size:14px}
+.search-box{display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 16px;background:rgba(255,255,255,0.55);border-radius:10px;border:1px solid rgba(0,0,0,0.06)}
+.search-box input{flex:1;border:none;outline:none;background:transparent;font-size:14px;color:#1b4332}
+.search-box input::placeholder{color:#95d5b2}
+.search-box svg{flex-shrink:0;color:#6b9080}
+.file-table tr.hidden{display:none}
 "#;
 
 fn page_wrapper(title: &str, body: String, extra: &str) -> String {
@@ -161,6 +168,9 @@ fn build_folder_page(folder: &SharedFolder, sub_path: &str) -> String {
         while let Some(Ok(e)) = entries.next() {
             let name = e.file_name().to_string_lossy().to_string();
             if name.starts_with('.') { continue; }
+            // Skip shortcut files
+            let lower = name.to_lowercase();
+            if lower.ends_with(".lnk") || lower.ends_with(".url") { continue; }
             if e.file_type().map(|t| t.is_dir()).unwrap_or(false) {
                 dirs.push((name, true));
             } else {
@@ -208,10 +218,10 @@ fn build_folder_page(folder: &SharedFolder, sub_path: &str) -> String {
 
     let mut upload_html = String::new();
     if folder.allow_upload {
-        upload_html = format!(r#"<div class="upload-area" onclick="document.getElementById('file-upload').click()">
-            <p>点击此处上传文件到此文件夹</p></div>
+        upload_html = format!(r#"<div class="upload-area" id="upload-area">
+            <p>点击或拖拽文件到此区域上传</p></div>
         <form id="upload-form" style="display:none" method="post" action="/upload/{folder_name}" enctype="multipart/form-data">
-            <input type="file" id="file-upload" name="file" onchange="this.form.submit()"/></form>"#);
+            <input type="file" id="file-upload" name="file" onchange="var f=this.files[0];if(f&&/\.lnk$/i.test(f.name)){{alert('不支持上传快捷方式: '+f.name);this.value='';return}}this.form.submit()"/></form>"#);
     }
 
     let header_html = format!(r#"<div class="header">
@@ -219,19 +229,21 @@ fn build_folder_page(folder: &SharedFolder, sub_path: &str) -> String {
         <div class="actions">{header_extra}</div></div>
         <div class="container">
         {upload_html}
-        <table class="file-table"><thead><tr><th>名称</th><th>大小</th><th>操作</th></tr></thead><tbody>{rows}</tbody></table></div>"#);
+        <div class="search-box" id="search-box">{ICON_SEARCH}<input type="text" id="search-input" placeholder="搜索文件..."/></div>
+        <table class="file-table" id="file-table"><thead><tr><th>名称</th><th>大小</th><th>操作</th></tr></thead><tbody>{rows}</tbody></table></div>"#);
 
-    let mut scripts = String::new();
-    if folder.allow_rename || folder.allow_delete {
-        scripts.push_str(r#"<script>"#);
-        if folder.allow_rename {
-            scripts.push_str(r#"function renameFile(folder,oldName){var n=prompt('新文件名:',oldName);if(n&&n!==oldName){fetch('/rename/'+folder+'/'+encodeURIComponent(oldName),{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'name='+encodeURIComponent(n)}).then(r=>{if(r.ok)location.reload();else alert('重命名失败')})}}"#);
+    let mut scripts = String::from("<script>");
+    // Search filter — always active on folder pages
+    scripts.push_str(r#"var si=document.getElementById('search-input');if(si){si.addEventListener('input',function(){var q=this.value.toLowerCase();var rows=document.querySelectorAll('#file-table tbody tr');rows.forEach(function(r){var a=r.querySelector('a');var t=a?a.textContent.toLowerCase():'';r.classList.toggle('hidden',q&&t.indexOf(q)===-1)})})};"#);
+    // Rename / Delete — always define, called from onclick if buttons are present
+    scripts.push_str(r#"function renameFile(folder,oldName){var n=prompt('新文件名:',oldName);if(n&&n!==oldName){fetch('/rename/'+folder+'/'+encodeURIComponent(oldName),{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'name='+encodeURIComponent(n)}).then(function(r){if(r.ok)location.reload();else alert('重命名失败')})}}"#);
+    scripts.push_str(r#"function deleteFile(folder,name){if(confirm('确定删除 '+name+'?')){fetch('/delete/'+folder+'/'+encodeURIComponent(name),{method:'POST'}).then(function(r){if(r.ok)location.reload();else alert('删除失败')})}}"#);
+    if folder.allow_upload {
+            scripts.push_str(r#"var upArea=document.querySelector('.upload-area');if(upArea){upArea.addEventListener('click',function(){document.getElementById('file-upload').click()});upArea.addEventListener('dragover',function(e){e.preventDefault();e.stopPropagation();this.style.borderColor='#40916c';this.style.background='rgba(255,255,255,0.4)'});upArea.addEventListener('dragleave',function(e){e.preventDefault();e.stopPropagation();this.style.borderColor='';this.style.background=''});upArea.addEventListener('drop',function(e){e.preventDefault();e.stopPropagation();this.style.borderColor='';this.style.background='';var files=e.dataTransfer.files;var folderName='"#);
+            scripts.push_str(folder_name);
+            scripts.push_str(r#"';var uploaded=0;for(var i=0;i<files.length;i++){(function(file){if(/\.lnk$/i.test(file.name)){alert('不支持上传快捷方式: '+file.name);return}var fd=new FormData();fd.append('file',file);fetch('/upload/'+folderName,{method:'POST',body:fd}).then(function(r){uploaded++;if(uploaded===files.length)location.reload()})})(files[i])}})}"#);
         }
-        if folder.allow_delete {
-            scripts.push_str(r#"function deleteFile(folder,name){if(confirm('确定删除 '+name+'?')){fetch('/delete/'+folder+'/'+encodeURIComponent(name),{method:'POST'}).then(r=>{if(r.ok)location.reload();else alert('删除失败')})}}"#);
-        }
-        scripts.push_str("</script>");
-    }
+    scripts.push_str("</script>");
 
     page_wrapper(folder_name, header_html, &scripts)
 }
@@ -392,6 +404,13 @@ fn handle_request(mut request: tiny_http::Request, state: &Arc<Mutex<ServerState
 
                 // Parse multipart: find filename and file data
                 if let Some(filename) = extract_multipart_filename(&body, boundary) {
+                    // Reject shortcut/dangerous file extensions
+                    let lower_name = filename.to_lowercase();
+                    if lower_name.ends_with(".lnk") || lower_name.ends_with(".url") {
+                        let resp = html_response(format!("<meta http-equiv=\"refresh\" content=\"0;url=/files/{}\"><script>alert('不支持上传快捷方式文件')</script>", folder_name));
+                        let _ = request.respond(resp);
+                        return;
+                    }
                     if let Some(data) = extract_multipart_data(&body, boundary) {
                         let dest = PathBuf::from(&folder.path).join(&filename);
                         if !dest.exists() {
@@ -507,15 +526,15 @@ fn find_bytes(haystack: &[u8], needle: &[u8]) -> Option<usize> {
 }
 
 fn percent_decode(s: &str) -> String {
-    let mut result = String::with_capacity(s.len());
+    let mut bytes = Vec::with_capacity(s.len());
     let mut chars = s.chars();
     while let Some(c) = chars.next() {
         if c == '%' {
             let h1 = chars.next().and_then(|c| c.to_digit(16));
             let h2 = chars.next().and_then(|c| c.to_digit(16));
-            if let (Some(h1), Some(h2)) = (h1, h2) { result.push(char::from_u32(h1*16+h2).unwrap_or('?')); }
-        } else if c == '+' { result.push(' '); }
-        else { result.push(c); }
+            if let (Some(h1), Some(h2)) = (h1, h2) { bytes.push((h1*16+h2) as u8); }
+        } else if c == '+' { bytes.push(b' '); }
+        else { bytes.extend_from_slice(c.to_string().as_bytes()); }
     }
-    result
+    String::from_utf8_lossy(&bytes).into_owned()
 }
