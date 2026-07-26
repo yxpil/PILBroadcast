@@ -59,6 +59,16 @@ fn load_state(app: &AppState) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let data_dir = dirs::data_dir().unwrap_or_else(|| PathBuf::from(".")).join("com.pil.publisher");
+    let _ = std::fs::create_dir_all(&data_dir);
+
+    // ── Single-instance guard: only one PiLPublisher can run ──
+    let lock_path = data_dir.join(".instance.lock");
+    let singleton = std::fs::OpenOptions::new().create_new(true).write(true).open(&lock_path);
+    match singleton {
+        Ok(_) => { /* first instance */ }
+        Err(_) => { std::process::exit(0); }
+    };
+
     let app_state = AppState { server: Arc::new(Mutex::new(ServerState::new(9726))), data_dir, logs: Arc::new(Mutex::new(Vec::new())) };
     load_state(&app_state);
 
@@ -70,7 +80,7 @@ pub fn run() {
             start_server, stop_server, add_folder, remove_folder, toggle_folder, toggle_folder_perm,
             set_password, get_folders, get_password, is_server_running, get_local_ip, get_logs,
         ])
-        .setup(|app| {
+        .setup(move |app| {
             // Prevent window from being destroyed — hide to tray instead
             if let Some(window) = app.get_webview_window("main") {
                 let window_clone = window.clone();
@@ -91,13 +101,18 @@ pub fn run() {
                 .icon(app.default_window_icon().unwrap().clone())
                 .menu(&menu)
                 .tooltip("PiLPublisher")
-                .on_menu_event(|app, event| {
+                .on_menu_event({
+                    let quit_lock = lock_path.clone();
+                    move |app, event| {
                     match event.id().as_ref() {
                         "show" => { if let Some(w) = app.get_webview_window("main") { let _ = w.show(); let _ = w.set_focus(); } }
-                        "quit" => { app.exit(0); }
+                        "quit" => {
+                            let _ = std::fs::remove_file(&quit_lock);
+                            app.exit(0);
+                        }
                         _ => {}
                     }
-                })
+                }})
                 .on_tray_icon_event(|tray, event| {
                     if let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } = event {
                         let app = tray.app_handle();
