@@ -1,0 +1,40 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nicekwell/tauri/tauri-2-docs/tooling/cli/schema.json",
+  "productName": "PiLPublisher",
+  "version": "0.1.0",
+  "identifier": "com.pil.publisher",
+  "build": {
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "PiLPublisher",
+        "width": 800,
+        "height": 500,
+        "minWidth": 600,
+        "minHeight": 400,
+        "decorations": false,
+        "transparent": true,
+        "resizable": true,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ]
+  }
+}

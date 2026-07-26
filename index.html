@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>PiLPublisher</title>
+  </head>
+  <body>
+    <div id="app">
+      <div class="titlebar" data-tauri-drag-region>
+        <span class="titlebar-label">PiLPublisher</span>
+        <div class="window-controls">
+          <button class="win-btn" id="btn-minimize" title="Minimize">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="6" width="10" height="2" rx="1" fill="currentColor"/></svg>
+          </button>
+          <button class="win-btn" id="btn-maximize" title="Maximize">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2.5" y="2.5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          </button>
+          <button class="win-btn" id="btn-close" title="Close">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="2" y1="2" x2="12" y2="12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><line x1="12" y1="2" x2="2" y2="12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="main">
+        <div class="sidebar">
+          <div class="sidebar-header">
+            <span>共享文件夹</span>
+            <button class="add-btn" id="btn-add-folder">+ 添加</button>
+          </div>
+          <button class="server-btn" id="btn-toggle-server">启动服务器</button>
+          <ul class="folder-list" id="folder-list"></ul>
+          <div class="sidebar-footer">
+            <span id="server-status" class="status-off">● 未启动</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">局域网访问</div>
+          <div class="qr-wrapper"><canvas id="qr-canvas"></canvas></div>
+          <div class="url-display" id="url-display">http://0.0.0.0:9726</div>
+          <button class="log-toggle-btn" id="btn-toggle-log">显示日志</button>
+          <div class="log-panel" id="log-panel" style="display:none">
+            <div class="log-entries" id="log-entries"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings gear -->
+      <button class="settings-gear" id="btn-settings" title="设置">&#9881;</button>
+
+      <!-- Settings popup -->
+      <div class="settings-popup" id="settings-popup" style="display:none">
+        <div class="settings-title">设置</div>
+        <label>访问密码</label>
+        <div class="settings-row">
+          <input type="password" id="input-password" placeholder="留空则不设密码" />
+        </div>
+        <button class="pwd-btn" id="btn-set-pwd">保存密码</button>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

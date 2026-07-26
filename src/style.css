@@ -1,0 +1,466 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #A8E6CF;
+  border-radius: 12px;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: #A8E6CF;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ── Titlebar ── */
+.titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 14px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.titlebar-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d6a4f;
+  letter-spacing: 0.3px;
+  -webkit-app-region: drag;
+}
+
+.window-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  -webkit-app-region: no-drag;
+}
+
+/* ── White pill buttons ── */
+.win-btn {
+  padding: 12px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.7);
+  color: #2d6a4f;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+
+.win-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: scale(1.12);
+}
+
+.win-btn:active {
+  transform: scale(0.92);
+}
+
+#btn-close:hover {
+  background: #ff5f57;
+  color: #fff;
+}
+
+/* ── Main layout ── */
+.main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ── Left sidebar ── */
+.sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.04);
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1b4332;
+}
+
+.add-btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.75);
+  color: #2d6a4f;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.add-btn:hover {
+  background: #fff;
+}
+
+/* ── Password section ── */
+.pwd-section {
+  display: flex;
+  gap: 6px;
+}
+
+.pwd-section input {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #1b4332;
+  font-size: 13px;
+  outline: none;
+}
+
+.pwd-section input::placeholder {
+  color: #6b9080;
+}
+
+.pwd-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.75);
+  color: #2d6a4f;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.pwd-btn:hover {
+  background: #fff;
+}
+
+/* ── Server toggle button ── */
+.server-btn {
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #40916c;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.server-btn:hover {
+  background: #2d6a4f;
+}
+
+.server-btn.running {
+  background: #d62828;
+}
+
+.server-btn.running:hover {
+  background: #9b2226;
+}
+
+/* ── Folder list ── */
+.folder-list {
+  list-style: none;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.folder-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.6);
+  transition: background 0.15s;
+}
+
+.folder-item:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.folder-item .play-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  color: #2d6a4f;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  line-height: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.folder-item .play-btn:hover {
+  background: #40916c;
+  color: #fff;
+}
+
+.folder-item .play-btn.active {
+  background: #40916c;
+  color: #fff;
+}
+
+.folder-item .play-btn.active:hover {
+  background: #2d6a4f;
+}
+
+.folder-item .folder-name {
+  flex: 1;
+  font-size: 13px;
+  color: #1b4332;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.folder-item .remove-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #6b9080;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.folder-item .remove-btn:hover {
+  color: #d62828;
+}
+
+/* ── Sidebar footer ── */
+.sidebar-footer {
+  padding-top: 4px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.status-off {
+  color: #6b9080;
+}
+
+.status-on {
+  color: #40916c;
+  font-weight: 600;
+}
+
+/* ── Right panel ── */
+.panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  gap: 16px;
+}
+
+.panel-header {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1b4332;
+}
+
+.qr-wrapper {
+  background: #fff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.qr-wrapper canvas {
+  display: block;
+}
+
+.url-display {
+  font-size: 15px;
+  font-weight: 600;
+  color: #40916c;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-family: "SF Mono", "Fira Code", monospace;
+  cursor: default;
+  user-select: all;
+}
+
+.hint {
+  font-size: 13px;
+  color: #6b9080;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ── Log panel ── */
+.log-toggle-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.75);
+  color: #2d6a4f;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.log-toggle-btn:hover { background: #fff; }
+
+.log-panel {
+  width: 100%;
+  max-width: 320px;
+  max-height: 160px;
+  overflow-y: auto;
+  background: rgba(255,255,255,0.5);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.log-entries {
+  font-family: "SF Mono","Fira Code",monospace;
+  font-size: 11px;
+  color: #2d6a4f;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ── Settings gear ── */
+.settings-gear {
+  position: fixed;
+  bottom: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.7);
+  color: #2d6a4f;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s,transform .1s;
+  z-index: 10;
+}
+.settings-gear:hover { background: #fff; transform: rotate(30deg); }
+
+.settings-popup {
+  position: fixed;
+  bottom: 52px;
+  right: 14px;
+  width: 220px;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.settings-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1b4332;
+}
+.settings-popup label {
+  font-size: 12px;
+  color: #6b9080;
+}
+.settings-row {
+  display: flex;
+  gap: 6px;
+}
+.settings-row input {
+  flex: 1;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.05);
+  color: #1b4332;
+  font-size: 13px;
+  outline: none;
+}
+.settings-popup .pwd-btn {
+  padding: 8px;
+  border: none;
+  border-radius: 8px;
+  background: #40916c;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ── Permission toggles in folder items ── */
+.folder-item .perms {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  width: 100%;
+}
+.folder-item .perm-btn {
+  padding: 3px 7px;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 6px;
+  background: transparent;
+  color: #6b9080;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.folder-item .perm-btn.on {
+  background: #40916c;
+  color: #fff;
+  border-color: #40916c;
+}
+.folder-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}

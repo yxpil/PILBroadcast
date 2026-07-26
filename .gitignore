@@ -1,0 +1,11 @@
+node_modules/
+dist/
+target/
+*.exe
+*.msi
+*.dmg
+*.deb
+.AppImage
+.DS_Store
+Thumbs.db
+.idea/
