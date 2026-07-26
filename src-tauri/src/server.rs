@@ -1,5 +1,4 @@
 use std::fs;
-use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -46,14 +45,16 @@ pub struct SharedFolder {
 pub struct ServerState {
     pub folders: Vec<SharedFolder>,
     pub password: Option<String>,
-    pub running: bool,
+    pub active: bool,
     port: u16,
     shutdown_flag: Arc<AtomicBool>,
 }
 
 impl ServerState {
     pub fn new(port: u16) -> Self {
-        Self { folders: Vec::new(), password: None, running: false, port, shutdown_flag: Arc::new(AtomicBool::new(false)) }
+        Self { folders: Vec::new(), password: None, active: false, port,
+            shutdown_flag: Arc::new(AtomicBool::new(true)),
+        }
     }
 }
 
@@ -243,34 +244,47 @@ fn html_escape(s: &str) -> String {
 
 pub fn start_server(state: Arc<Mutex<ServerState>>) -> Result<(), String> {
     let mut s = state.lock().map_err(|e| e.to_string())?;
-    if s.running { return Err("Server is already running".into()); }
-    let port = s.port;
-    let server = Server::http(format!("0.0.0.0:{}", port)).map_err(|e| format!("Failed to bind: {}", e))?;
-    s.shutdown_flag.store(false, Ordering::SeqCst);
-    s.running = true;
-    let shutdown_flag = Arc::clone(&s.shutdown_flag);
-    drop(s);
-    let state_clone = Arc::clone(&state);
-    thread::spawn(move || loop {
-        if shutdown_flag.load(Ordering::SeqCst) { break; }
-        match server.recv_timeout(std::time::Duration::from_millis(500)) {
-            Ok(Some(request)) => handle_request(request, &state_clone),
-            Ok(None) => continue,
-            Err(_) => break,
-        }
-    });
+    if s.active { return Err("Server is already active".into()); }
+    s.active = true;
+    // Start listener thread if not already running
+    if s.shutdown_flag.load(Ordering::SeqCst) {
+        // First time — start the listener
+        s.shutdown_flag.store(false, Ordering::SeqCst);
+        let port = s.port;
+        let listener = std::net::TcpListener::bind(format!("0.0.0.0:{}", port))
+            .map_err(|e| format!("Failed to bind: {}", e))?;
+        let _ = listener.set_nonblocking(false);
+        let server = Server::from_listener(listener, None)
+            .map_err(|e| format!("Failed to create server: {}", e))?;
+        let shutdown_flag = Arc::clone(&s.shutdown_flag);
+        drop(s);
+        let state_clone = Arc::clone(&state);
+        thread::spawn(move || {
+            loop {
+                if shutdown_flag.load(Ordering::SeqCst) { break; }
+                match server.recv_timeout(std::time::Duration::from_millis(500)) {
+                    Ok(Some(request)) => handle_request(request, &state_clone),
+                    Ok(None) => continue,
+                    Err(_) => break,
+                }
+            }
+        });
+    } else {
+        drop(s);
+    }
     Ok(())
 }
 
 pub fn stop_server(state: Arc<Mutex<ServerState>>) -> Result<(), String> {
     let mut s = state.lock().map_err(|e| e.to_string())?;
-    if !s.running { return Ok(()); }
-    s.shutdown_flag.store(true, Ordering::SeqCst);
-    s.running = false;
-    if let Ok(mut stream) = std::net::TcpStream::connect(("127.0.0.1", s.port)) {
-        let _ = stream.write(b"GET / HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n");
-    }
+    s.active = false;
     Ok(())
+}
+
+/// Build the "paused" page
+fn build_paused_page() -> String {
+    let body = r#"<div class="pwd-gate"><h1>PiLPublisher</h1><p>服务已暂停</p><p style="font-size:13px;color:#6b9080">请等待管理员重新开启共享</p></div>"#;
+    page_wrapper("PiLPublisher", body.to_string(), "")
 }
 
 // ── Request handler ──
@@ -280,6 +294,12 @@ fn handle_request(mut request: tiny_http::Request, state: &Arc<Mutex<ServerState
     let method = request.method().clone();
 
     let s = state.lock().unwrap();
+
+    // If server is paused, show paused page
+    if !s.active {
+        let _ = request.respond(html_response(build_paused_page()));
+        return;
+    }
 
     // Password check
     let mut authed = false;

@@ -153,7 +153,7 @@ fn get_password(state: State<AppState>) -> Result<Option<String>, String> {
 #[tauri::command]
 fn is_server_running(state: State<AppState>) -> Result<bool, String> {
     let s = state.server.lock().map_err(|e| e.to_string())?;
-    Ok(s.running)
+    Ok(s.active)
 }
 
 #[tauri::command]
