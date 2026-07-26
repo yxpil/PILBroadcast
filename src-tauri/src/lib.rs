@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use tauri::{Manager, State};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-use tauri::menu::{MenuBuilder, MenuItemBuilder};
+use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem};
 
 struct AppState {
     server: Arc<Mutex<ServerState>>,
@@ -66,7 +66,13 @@ pub fn run() {
     let singleton = std::fs::OpenOptions::new().create_new(true).write(true).open(&lock_path);
     match singleton {
         Ok(_) => { /* first instance */ }
-        Err(_) => { std::process::exit(0); }
+        Err(_) => {
+            // Another instance is running — tell it to show its window, then exit
+            if let Ok(mut stream) = std::net::TcpStream::connect("127.0.0.1:9725") {
+                let _ = std::io::Write::write_all(&mut stream, b"show\n");
+            }
+            std::process::exit(0);
+        }
     };
 
     let app_state = AppState { server: Arc::new(Mutex::new(ServerState::new(9726))), data_dir, logs: Arc::new(Mutex::new(Vec::new())) };
@@ -92,10 +98,35 @@ pub fn run() {
                 });
             }
 
+            // IPC listener on port 9725 — receives "show" from second instances
+            if let Some(ipc_win) = app.get_webview_window("main") {
+                std::thread::spawn(move || {
+                    if let Ok(listener) = std::net::TcpListener::bind("127.0.0.1:9725") {
+                        for conn in listener.incoming() {
+                            if let Ok(mut s) = conn {
+                                let mut buf = [0u8; 8];
+                                if std::io::Read::read(&mut s, &mut buf).is_ok() {
+                                    if buf.starts_with(b"show") {
+                                        let _ = ipc_win.show();
+                                        let _ = ipc_win.set_focus();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
             // System tray
             let show_item = MenuItemBuilder::with_id("show", "显示窗口").build(app)?;
+            let sep1 = PredefinedMenuItem::separator(app)?;
+            let feedback_item = MenuItemBuilder::with_id("feedback", "问题反馈").build(app)?;
+            let support_item = MenuItemBuilder::with_id("support", "联系获得支持").build(app)?;
+            let sep2 = PredefinedMenuItem::separator(app)?;
             let quit_item = MenuItemBuilder::with_id("quit", "退出").build(app)?;
-            let menu = MenuBuilder::new(app).items(&[&show_item, &quit_item]).build()?;
+            let menu = MenuBuilder::new(app)
+                .items(&[&show_item, &sep1, &feedback_item, &support_item, &sep2, &quit_item])
+                .build()?;
 
             let tray = TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
@@ -106,6 +137,16 @@ pub fn run() {
                     move |app, event| {
                     match event.id().as_ref() {
                         "show" => { if let Some(w) = app.get_webview_window("main") { let _ = w.show(); let _ = w.set_focus(); } }
+                        "feedback" => {
+                            let _ = std::process::Command::new("cmd")
+                                .args(["/c", "start", "https://feedback.yxpil.com/"])
+                                .spawn();
+                        }
+                        "support" => {
+                            let _ = std::process::Command::new("cmd")
+                                .args(["/c", "start", "https://yxpil.com/"])
+                                .spawn();
+                        }
                         "quit" => {
                             let _ = std::fs::remove_file(&quit_lock);
                             app.exit(0);
