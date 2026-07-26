@@ -188,7 +188,8 @@ pub fn run() {
             set_password, get_folders, get_password, is_server_running, get_local_ip, get_logs,
         ])
         .setup(|app| {
-            #[cfg(debug_assertions)] {
+            #[cfg(debug_assertions)]
+            {
                 let window = app.get_webview_window("main").unwrap();
                 window.open_devtools();
             }
