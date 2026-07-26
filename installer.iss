@@ -2,7 +2,7 @@
 ; 安装到用户 AppData，无需管理员权限
 
 #define MyAppName "PiLPublisher"
-#define MyAppVersion "0.1.0"
+#define MyAppVersion "0.1.4"
 #define MyAppPublisher "yxpil"
 #define MyAppURL "https://github.com/yxpil/PILPublisher"
 #define MyAppExeName "pil-publisher.exe"
@@ -17,7 +17,7 @@ DefaultDirName={localappdata}\{#MyAppName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 OutputDir=.\installer
-OutputBaseFilename=PiLPublisher-Setup-0.1.0
+OutputBaseFilename=PiLPublisher-Setup-0.1.4
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
