@@ -15,7 +15,13 @@ interface SharedFolder {
 
 // ── Window controls ──
 const win = getCurrentWindow();
-document.getElementById("btn-minimize")?.addEventListener("click", () => win.minimize());
+// Drag: use JS-based dragging (works with transparent windows)
+document.querySelector(".titlebar")?.addEventListener("mousedown", (e) => {
+  if ((e.target as HTMLElement).closest(".window-controls, .win-btn")) return;
+  win.startDragging();
+});
+// Minimize → hide to tray
+document.getElementById("btn-minimize")?.addEventListener("click", () => win.hide());
 document.getElementById("btn-maximize")?.addEventListener("click", async () => {
   (await win.isMaximized()) ? win.unmaximize() : win.maximize();
 });

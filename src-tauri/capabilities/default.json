@@ -8,6 +8,10 @@
     "core:window:allow-maximize",
     "core:window:allow-unmaximize",
     "core:window:allow-is-maximized",
+    "core:window:allow-start-dragging",
+    "core:window:allow-hide",
+    "core:window:allow-show",
+    "core:window:allow-set-focus",
     "shell:default",
     "dialog:allow-open"
   ]
