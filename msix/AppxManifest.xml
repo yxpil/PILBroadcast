@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
+
+  <Identity Name="yxpil.PiLPublisher"
+            Version="0.1.8.0"
+            Publisher="CN=YxPil"
+            ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>PiLPublisher</DisplayName>
+    <PublisherDisplayName>yxpil</PublisherDisplayName>
+    <Description>局域网文件共享工具 — 拖拽上传，扫码下载</Description>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <Resources>
+    <Resource Language="zh-CN" />
+    <Resource Language="en-US" />
+  </Resources>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+    <Capability Name="internetClient" />
+    <Capability Name="internetClientServer" />
+    <Capability Name="privateNetworkClientServer" />
+  </Capabilities>
+
+  <Applications>
+    <Application Id="PiLPublisher"
+                 Executable="pil-publisher.exe"
+                 EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="PiLPublisher"
+        Description="局域网文件共享工具"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png"
+        BackgroundColor="#A8E6CF">
+        <uap:DefaultTile Wide310x150Logo="Assets\Square310x310Logo.png"
+                         Square71x71Logo="Assets\Square71x71Logo.png"
+                         Square310x310Logo="Assets\Square310x310Logo.png" />
+        <uap:SplashScreen Image="Assets\Square150x150Logo.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+</Package>
