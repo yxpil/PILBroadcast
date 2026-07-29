@@ -1,7 +1,8 @@
 [package]
-name = "pil-publisher"
+name = "pil-broadcast"
 version = "0.1.8"
 edition = "2021"
+default-run = "pil-broadcast"
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
@@ -16,6 +17,13 @@ dirs = "6"
 chrono = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+image = { version = "0.25", default-features = false, features = ["jpeg"] }
+xcap = "0.2"
+base64 = "0.22"
+
+[[bin]]
+name = "capture-test"
+path = "src/capture_test.rs"
 
 [features]
 default = ["custom-protocol"]

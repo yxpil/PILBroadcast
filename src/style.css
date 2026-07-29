@@ -106,60 +106,6 @@ html, body {
   color: #1b4332;
 }
 
-.add-btn {
-  padding: 6px 14px;
-  border: none;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.75);
-  color: #2d6a4f;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.add-btn:hover {
-  background: #fff;
-}
-
-/* ── Password section ── */
-.pwd-section {
-  display: flex;
-  gap: 6px;
-}
-
-.pwd-section input {
-  flex: 1;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.7);
-  color: #1b4332;
-  font-size: 13px;
-  outline: none;
-}
-
-.pwd-section input::placeholder {
-  color: #6b9080;
-}
-
-.pwd-btn {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.75);
-  color: #2d6a4f;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s;
-}
-
-.pwd-btn:hover {
-  background: #fff;
-}
-
 /* ── Server toggle button ── */
 .server-btn {
   padding: 12px;
@@ -185,89 +131,87 @@ html, body {
   background: #9b2226;
 }
 
-/* ── Folder list ── */
-.folder-list {
-  list-style: none;
+/* ── Capture section ── */
+.capture-section {
   flex: 1;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  padding: 8px 0;
 }
 
-.folder-item {
+.capture-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 10px;
+  justify-content: space-between;
+}
+
+.capture-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b9080;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.capture-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1b4332;
+}
+
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
   background: rgba(255, 255, 255, 0.6);
-  transition: background 0.15s;
-}
-
-.folder-item:hover {
-  background: rgba(255, 255, 255, 0.85);
-}
-
-.folder-item .play-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.85);
-  color: #2d6a4f;
+  outline: none;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  padding: 0;
-  line-height: 0;
-  transition: background 0.15s, color 0.15s;
 }
 
-.folder-item .play-btn:hover {
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #40916c;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  transition: transform 0.1s;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+/* ── Capture toggle button ── */
+.capture-btn {
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
   background: #40916c;
   color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-top: 4px;
 }
 
-.folder-item .play-btn.active {
-  background: #40916c;
-  color: #fff;
-}
-
-.folder-item .play-btn.active:hover {
+.capture-btn:hover {
   background: #2d6a4f;
 }
 
-.folder-item .folder-name {
-  flex: 1;
-  font-size: 13px;
-  color: #1b4332;
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.capture-btn.active {
+  background: #d62828;
 }
 
-.folder-item .remove-btn {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  color: #6b9080;
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: color 0.15s;
-}
-
-.folder-item .remove-btn:hover {
-  color: #d62828;
+.capture-btn.active:hover {
+  background: #9b2226;
 }
 
 /* ── Sidebar footer ── */
@@ -435,32 +379,88 @@ html, body {
   cursor: pointer;
 }
 
-/* ── Permission toggles in folder items ── */
-.folder-item .perms {
-  display: flex;
-  gap: 4px;
-  margin-top: 4px;
-  width: 100%;
+.status-capture-on {
+  color: #40916c;
+  font-weight: 600;
 }
-.folder-item .perm-btn {
-  padding: 3px 7px;
-  border: 1px solid rgba(0,0,0,0.1);
-  border-radius: 6px;
-  background: transparent;
+
+.status-capture-off {
   color: #6b9080;
-  font-size: 10px;
+}
+
+/* ── Source selector ── */
+.source-select {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.7);
+  color: #1b4332;
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
   cursor: pointer;
-  transition: all .15s;
-  white-space: nowrap;
+  flex: 1;
 }
-.folder-item .perm-btn.on {
-  background: #40916c;
+
+/* ── Audio button ── */
+.audio-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.75);
+  color: #2d6a4f;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.audio-btn:hover {
+  background: #fff;
+}
+
+.audio-btn.active {
+  background: #d62828;
   color: #fff;
-  border-color: #40916c;
 }
-.folder-info {
+
+.audio-btn.active:hover {
+  background: #9b2226;
+}
+
+/* ── Preview ── */
+.preview-wrapper {
+  width: 100%;
+  height: 240px;
+  flex-shrink: 0;
+  background: #1b4332;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  margin-bottom: 12px;
+}
+
+.preview-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.preview-waiting {
+  position: absolute;
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.qr-section {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-width: 0;
+  align-items: center;
+  gap: 16px;
 }

@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>PiLPublisher</title>
+    <title>PILBroadcast</title>
   </head>
   <body>
     <div id="app">
-      <div class="titlebar" data-tauri-drag-region>
-        <span class="titlebar-label">PiLPublisher</span>
+      <div class="titlebar">
+        <span class="titlebar-label">PILBroadcast</span>
         <div class="window-controls">
           <button class="win-btn" id="btn-minimize" title="Minimize">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="6" width="10" height="2" rx="1" fill="currentColor"/></svg>
@@ -25,21 +25,41 @@
 
       <div class="main">
         <div class="sidebar">
-          <div class="sidebar-header">
-            <span>共享文件夹</span>
-            <button class="add-btn" id="btn-add-folder">+ 添加</button>
-          </div>
+          <div class="sidebar-header"><span>直播控制</span></div>
+
           <button class="server-btn" id="btn-toggle-server">启动服务器</button>
-          <ul class="folder-list" id="folder-list"></ul>
+
+          <div class="capture-section">
+            <div class="capture-row">
+              <span class="capture-label">画质</span>
+              <span class="capture-val" id="quality-val">60%</span>
+            </div>
+            <input type="range" class="slider" id="slider-quality" min="10" max="100" value="60" />
+
+            <div class="capture-row">
+              <span class="capture-label">帧率</span>
+              <span class="capture-val" id="fps-val">30 FPS</span>
+            </div>
+            <input type="range" class="slider" id="slider-fps" min="1" max="30" value="30" />
+          </div>
+
           <div class="sidebar-footer">
             <span id="server-status" class="status-off">● 未启动</span>
+            <span id="capture-status" class="status-capture-off" style="margin-left:12px">◉ 未直播</span>
           </div>
         </div>
 
         <div class="panel">
           <div class="panel-header">局域网访问</div>
-          <div class="qr-wrapper"><canvas id="qr-canvas"></canvas></div>
-          <div class="url-display" id="url-display">http://0.0.0.0:9726</div>
+          <div class="preview-wrapper" id="preview-wrapper" style="display:none">
+            <img id="preview-img" src="" alt="预览" />
+            <span class="preview-waiting" id="preview-waiting">等待画面...</span>
+          </div>
+          <div class="qr-section" id="qr-section">
+            <div class="qr-wrapper"><canvas id="qr-canvas"></canvas></div>
+            <div class="url-display" id="url-display">http://0.0.0.0:8726</div>
+            <p class="hint">扫码或输入网址即可观看直播</p>
+          </div>
           <button class="log-toggle-btn" id="btn-toggle-log">显示日志</button>
           <div class="log-panel" id="log-panel" style="display:none">
             <div class="log-entries" id="log-entries"></div>
@@ -47,10 +67,8 @@
         </div>
       </div>
 
-      <!-- Settings gear -->
       <button class="settings-gear" id="btn-settings" title="设置">&#9881;</button>
 
-      <!-- Settings popup -->
       <div class="settings-popup" id="settings-popup" style="display:none">
         <div class="settings-title">设置</div>
         <label>访问密码</label>
