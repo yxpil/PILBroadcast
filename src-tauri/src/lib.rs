@@ -1,5 +1,7 @@
-mod capture;
-mod server;
+// `pub` so the integration tests in ../tests/ can drive the real HTTP server
+// and capture ring buffer over the public crate boundary. No runtime behavior change.
+pub mod capture;
+pub mod server;
 
 use server::ServerState;
 use std::path::PathBuf;
